@@ -66,7 +66,7 @@ Anda dapat menjalankan aplikasi ini menggunakan **Docker Compose** (direkomendas
 1. **Clone repositori proyek ini ke komputer Anda:**
 
    ```
-   git clone <url-repositori-git-anda>
+   git clone https://github.com/hillan17/tugas4-paw
    cd aplikasi-inventaris-toko
    
    ```
@@ -95,9 +95,6 @@ Anda dapat menjalankan aplikasi ini menggunakan **Docker Compose** (direkomendas
    
    ```
 
-   *(Catatan: File database di folder `data/toko.db` tetap tersimpan aman di komputer Anda berkat konfigurasi volume Docker).*
-
-### Opsi 2: Menjalankan Secara Lokal (Tanpa Docker)
 ## Skema Tabel Database (`produk`)
 
 | Kolom | Tipe Data | Keterangan | 
