@@ -1,0 +1,13 @@
+services:
+  tokokita-app:
+    build: .
+    container_name: tokokita_mvc_web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      # Menyimpan database SQLite secara persisten di host meskipun container di-restart
+      - ./data:/usr/src/app/data
+    restart: unless-stopped

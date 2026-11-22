@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TokoKita - Manajemen Inventaris</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    :root {
+      --sidebar-bg: #0f172a;
+      --sidebar-hover: #1e293b;
+      --bg-main: #f8fafc;
+    }
+    body {
+      background-color: var(--bg-main);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #334155;
+      overflow-x: hidden;
+    }
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      background-color: var(--sidebar-bg);
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem;
+      color: #94a3b8;
+    }
+    .sidebar .brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+      margin-bottom: 2rem;
+      display: block;
+    }
+    .sidebar .brand span {
+      color: #38bdf8;
+    }
+    .sidebar .nav-link {
+      color: #ffffff;
+      background-color: var(--sidebar-hover);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 500;
+    }
+    .main-content {
+      margin-left: 250px;
+      padding: 2.25rem;
+      min-height: 100vh;
+    }
+    .top-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .top-header h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+    }
+    .card-stats {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .card-stats .icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+    .data-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+      overflow: hidden;
+    }
+    .data-card-header {
+      padding: 1.15rem 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .table th {
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      padding: 0.95rem 1.5rem;
+    }
+    .table td {
+      padding: 0.95rem 1.5rem;
+      vertical-align: middle;
+    }
+    .btn-action {
+      padding: 0.35rem 0.5rem;
+      font-size: 1rem;
+      line-height: 1;
+    }
+    @media (max-width: 991.98px) {
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+      }
+      .sidebar .brand { margin-bottom: 0; }
+      .sidebar .nav { display: none; }
+      .main-content { margin-left: 0; padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <% const daftarBarang = locals.items || locals.produk || locals.barang || []; %>
+
+  <!-- Sidebar Ringkas (Hanya Fitur Aktif) -->
+  <aside class="sidebar">
+    <div>
+      <a href="/" class="brand">Toko<span>Kita</span></a>
+      <nav class="nav flex-column">
+        <a class="nav-link active" href="/"><i class="bi bi-grid-1x2-fill"></i> <span>Dashboard</span></a>
+      </nav>
+    </div>
+
+    <div class="mt-lg-auto">
+      <button class="btn btn-primary py-2 px-3 w-100 d-flex align-items-center justify-content-center gap-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#tambahModal">
+        <i class="bi bi-plus-lg"></i> <span>Tambah Barang</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Area Utama -->
+  <main class="main-content">
+    <header class="top-header">
+      <div>
+        <h1>Manajemen Inventaris</h1>
+        <p class="text-muted m-0 small">Kelola data stok dan harga barang toko</p>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <div class="input-group" style="width: 230px;">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" id="searchInput" class="form-control border-start-0 ps-0" placeholder="Cari nama barang...">
+        </div>
+        <select id="categoryFilter" class="form-select" style="width: 190px;">
+          <option value="">Semua Kategori</option>
+          <option value="Elektronik">Elektronik</option>
+          <option value="Makanan & Minuman">Makanan & Minuman</option>
+          <option value="Alat Tulis">Alat Tulis</option>
+          <option value="Pakaian">Pakaian</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- Ringkasan Statistik -->
+    <section class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="card-stats">
+          <div class="icon-box bg-primary bg-opacity-10 text-primary">
+            <i class="bi bi-box"></i>
+          </div>
+          <div>
+            <div class="text-muted small">Total Jenis Produk</div>
+            <div class="fs-4 fw-bold text-dark"><%= daftarBarang.length %> Item</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-stats">
+          <div class="icon-box bg-success bg-opacity-10 text-success">
+            <i class="bi bi-layers"></i>
+          </div>
+          <div>
+            <div class="text-muted small">Total Keseluruhan Stok</div>
+            <div class="fs-4 fw-bold text-dark">
+              <%= daftarBarang.reduce((total, item) => total + Number(item.stok || 0), 0) %> Unit
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabel Data Utama -->
+    <section class="data-card">
+      <div class="data-card-header d-flex justify-content-between align-items-center">
+        <span>Daftar Inventaris</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="inventoryTable">
+          <thead>
+            <tr>
+              <th style="width: 70px;">No</th>
+              <th>Nama Barang</th>
+              <th>Kategori</th>
+              <th>Harga</th>
+              <th>Stok</th>
+              <th class="text-end" style="width: 130px;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (daftarBarang.length === 0) { %>
+              <tr>
+                <td colspan="6" class="text-center py-5 text-muted">
+                  <i class="bi bi-inbox fs-2 d-block mb-2"></i> Belum ada data barang. Klik <strong>Tambah Barang</strong> untuk memulai.
+                </td>
+              </tr>
+            <% } else { %>
+              <% daftarBarang.forEach((item, index) => { %>
+                <tr class="item-row" data-nama="<%= item.nama.toLowerCase() %>" data-kategori="<%= item.kategori %>">
+                  <td class="text-muted"><%= index + 1 %></td>
+                  <td class="fw-semibold text-dark"><%= item.nama %></td>
+                  <td><span class="badge bg-light text-secondary border"><%= item.kategori %></span></td>
+                  <td>Rp <%= Number(item.harga).toLocaleString('id-ID') %></td>
+                  <td>
+                    <% if (item.stok <= 5) { %>
+                      <span class="badge bg-danger bg-opacity-10 text-danger"><%= item.stok %> Unit</span>
+                    <% } else { %>
+                      <span class="badge bg-success bg-opacity-10 text-success"><%= item.stok %> Unit</span>
+                    <% } %>
+                  </td>
+                  <td class="text-end">
+                    <button type="button" class="btn btn-action btn-outline-primary border-0 me-1" data-bs-toggle="modal" data-bs-target="#editModal<%= item.id %>" title="Edit">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <form action="/hapus/<%= item.id %>" method="POST" class="d-inline" onsubmit="return confirm('Hapus <%= item.nama %>?')">
+                      <button type="submit" class="btn btn-action btn-outline-danger border-0" title="Hapus">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+
+                <!-- Modal Edit Barang -->
+                <div class="modal fade" id="editModal<%= item.id %>" tabindex="-1" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+                      <div class="modal-header">
+                        <h5 class="modal-title fw-bold">Edit Barang</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      </div>
+                      <form action="/edit/<%= item.id %>" method="POST">
+                        <div class="modal-body">
+                          <div class="mb-3">
+                            <label class="form-label small fw-semibold">Nama Barang</label>
+                            <input type="text" name="nama" class="form-control" value="<%= item.nama %>" required>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label small fw-semibold">Kategori</label>
+                            <select name="kategori" class="form-select" required>
+                              <option value="Elektronik" <%= item.kategori === 'Elektronik' ? 'selected' : '' %>>Elektronik</option>
+                              <option value="Makanan & Minuman" <%= item.kategori === 'Makanan & Minuman' ? 'selected' : '' %>>Makanan & Minuman</option>
+                              <option value="Alat Tulis" <%= item.kategori === 'Alat Tulis' ? 'selected' : '' %>>Alat Tulis</option>
+                              <option value="Pakaian" <%= item.kategori === 'Pakaian' ? 'selected' : '' %>>Pakaian</option>
+                              <option value="Lainnya" <%= item.kategori === 'Lainnya' ? 'selected' : '' %>>Lainnya</option>
+                            </select>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label small fw-semibold">Harga (Rp)</label>
+                            <input type="number" name="harga" class="form-control" value="<%= item.harga %>" min="0" required>
+                          </div>
+                          <div class="mb-2">
+                            <label class="form-label small fw-semibold">Jumlah Stok</label>
+                            <input type="number" name="stok" class="form-control" value="<%= item.stok %>" min="0" required>
+                          </div>
+                        </div>
+                        <div class="modal-footer border-0">
+                          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                          <button type="submit" class="btn btn-primary px-4">Simpan Perubahan</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Tambah Barang -->
+  <div class="modal fade" id="tambahModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Tambah Barang Baru</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form action="/tambah" method="POST">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Nama Barang</label>
+              <input type="text" name="nama" class="form-control" placeholder="Contoh: Mouse Wireless" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Kategori</label>
+              <select name="kategori" class="form-select" required>
+                <option value="" disabled selected>Pilih kategori...</option>
+                <option value="Elektronik">Elektronik</option>
+                <option value="Makanan & Minuman">Makanan & Minuman</option>
+                <option value="Alat Tulis">Alat Tulis</option>
+                <option value="Pakaian">Pakaian</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Harga (Rp)</label>
+              <input type="number" name="harga" class="form-control" placeholder="50000" min="0" required>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small fw-semibold">Jumlah Stok</label>
+              <input type="number" name="stok" class="form-control" placeholder="10" min="0" required>
+            </div>
+          </div>
+          <div class="modal-footer border-0">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary px-4">Simpan Barang</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Fitur Pencarian & Filter Kategori Real-time
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const rows = document.querySelectorAll('.item-row');
+
+    function filterTable() {
+      const keyword = searchInput.value.toLowerCase();
+      const category = categoryFilter.value;
+
+      rows.forEach(row => {
+        const nama = row.getAttribute('data-nama');
+        const kat = row.getAttribute('data-kategori');
+        const matchNama = nama.includes(keyword);
+        const matchKat = category === '' || kat === category;
+        row.style.display = (matchNama && matchKat) ? '' : 'none';
+      });
+    }
+
+    searchInput.addEventListener('input', filterTable);
+    categoryFilter.addEventListener('change', filterTable);
+  </script>
+</body>
+</html>
